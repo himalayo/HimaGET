@@ -7,7 +7,6 @@
 #include <stdbool.h>
 #include <string.h>
 #include <dirent.h>
-#include <sched.h>
 
 #include "hash_table.h"
 #include "spawn.h"
@@ -50,6 +49,7 @@ main (int argc, char** argv)
 		exit(EXIT_FAILURE);
 	}
 	
+
 	write(STDOUT_FILENO,temp_buff,snprintf(temp_buff,sizeof(temp_buff),"Spinning read buffer... "));
 	if (!spin_read(&microeng))
 	{
@@ -59,13 +59,13 @@ main (int argc, char** argv)
 	}
 	write(microeng.write,"spin_wrb\n",sizeof("spin_wrb\n"));
 	write(STDOUT_FILENO,temp_buff,snprintf(temp_buff,sizeof(temp_buff),"OK\nListening\n"));
-	
+		
 	for(;;)
 	{
 		context.read.header->opcode = HEADER_POP;
 		while ( !( context.read.header->opcode == HEADER_DONE ) )
 		{
-			sched_yield();
+			sleep(0);
 		}
 		
 		//Get path
@@ -92,7 +92,7 @@ main (int argc, char** argv)
 		time_t rawtime = time(NULL);
   	 	struct tm *ptm = localtime(&rawtime);
     		strftime(buf, sizeof(buf), "%c", ptm);
-		size_t len = sprintf(context.write.buffer,"HTTP/1.1 200 OK\nLocation: http://localhost:2096/\nDate: %s\nContent-Type: %s\nContent-Length: %d\n\n%s",buf,requested_file->mime,requested_file->data.size,requested_file->data.bytes);
+		size_t len = sprintf(context.write.buffer,"HTTP/1.1 200 OK\nDate: %s\nContent-Type: %s\nConnection: close\nContent-Length: %d\n\n%s",buf,requested_file->mime,requested_file->data.size,requested_file->data.bytes);
 		context.write.header->len = len;
 		context.write.header->argument = context.read.header->argument;
 		context.write.header->opcode = 1;
