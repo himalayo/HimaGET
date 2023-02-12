@@ -92,8 +92,9 @@ main (int argc, char** argv)
 		time_t rawtime = time(NULL);
   	 	struct tm *ptm = localtime(&rawtime);
     		strftime(buf, sizeof(buf), "%c", ptm);
-		size_t len = sprintf(context.write.buffer,"HTTP/1.1 200 OK\nDate: %s\nContent-Type: %s\nConnection: close\nContent-Length: %d\n\n%s",buf,requested_file->mime,requested_file->data.size,requested_file->data.bytes);
-		context.write.header->len = len;
+		size_t len = sprintf(context.write.buffer,"HTTP/1.1 200 OK\nDate: %s\nContent-Type: %s\nConnection: close\nContent-Length: %d\n\n",buf,requested_file->mime,requested_file->data.size);
+		memcpy(context.write.buffer+len,requested_file->data.bytes,requested_file->data.size);
+		context.write.header->len = len+requested_file->data.size;
 		context.write.header->argument = context.read.header->argument;
 		context.write.header->opcode = 1;
 	}
